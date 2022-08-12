@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Table } from "react-daisyui";
+
 import {
     collection,
     DocumentData,
@@ -14,7 +14,17 @@ import {
     setDoc,
 } from "firebase/firestore";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
-
+import {
+    Table,
+    Thead,
+    Tbody,
+    Tfoot,
+    Tr,
+    Th,
+    Td,
+    TableCaption,
+    TableContainer,
+} from "@chakra-ui/react";
 const Dashboard = () => {
     const firebaseConfig = {
         apiKey: "AIzaSyBrCUdCf4V6XFOUoLrp2unufCJaidoKYlA",
@@ -87,6 +97,21 @@ const Dashboard = () => {
         );
     };
     const reject = async (id: string) => {
+        setApplicants((a) => {
+            return a.map((item) => {
+                return item.id === id
+                    ? {
+                          ...item,
+                          status: {
+                              rejected: true,
+                              contact: false,
+                              documents: false,
+                              confirmation: false,
+                          },
+                      }
+                    : item;
+            });
+        });
         await setDoc(
             doc(db, "users", id),
             {
@@ -106,103 +131,110 @@ const Dashboard = () => {
                 <h1>Scanner</h1>
             </nav>
             <main className="mt-40 mx-20">
-                <Table>
-                    <Table.Head>
-                        <span>Name</span>
-                        <span>Email</span>
-                        <span>Grade</span>
-                        <span>School</span>
-                        <span>T Shirt Size</span>
-                        <span>Technical Skill</span>
-                        <span>Comments</span>
-                        <span>Contact</span>
-                        <span>Documents</span>
-                        <span>Confirmation</span>
-                        <span>Rejection</span>
-                        <span>Rules</span>
-                        <span>Release</span>
-                        <span>Confirm</span>
-                        <span>Reject</span>
-                    </Table.Head>
-                    <Table.Body>
-                        {applicants.map((applicant) => (
-                            <Table.Row key={applicant.email}>
-                                <span>{applicant.name}</span>
-                                <span>{applicant.email}</span>
-                                <span>{applicant.grade}</span>
-                                <span>{applicant.school}</span>
-                                <span>{applicant.tShirtSize}</span>
-                                <span>{applicant.technicalSkill}</span>
-                                <span>{applicant.comments}</span>
-                                <span>
-                                    {applicant.status.contact.toString()}
-                                </span>
-                                <span>
-                                    {applicant.status.documents.toString()}
-                                </span>
-                                <span>
-                                    {applicant.status.confirmation.toString()}
-                                </span>
-                                <span>
-                                    {applicant.status.rejected.toString()}
-                                </span>
-                                <span>
-                                    <a
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className={
-                                            applicant.downloads.release === ""
-                                                ? "hidden"
-                                                : ""
-                                        }
-                                        href={applicant.downloads.rules}
-                                    >
-                                        rules
-                                    </a>
-                                </span>
-                                <span>
-                                    <a
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        href={applicant.downloads.release}
-                                        className={
-                                            applicant.downloads.release === ""
-                                                ? "hidden"
-                                                : ""
-                                        }
-                                    >
-                                        release
-                                    </a>
-                                </span>
-                                <span>
-                                    <button
-                                        className={`${
-                                            applicant.status.documents
-                                                ? ""
-                                                : "hidden"
-                                        } text-green-500`}
-                                        onClick={() => confirm(applicant.id)}
-                                    >
-                                        Confirm
-                                    </button>
-                                </span>
-                                <span>
-                                    <button
-
-                                        className={`${
-                                            applicant.status.documents
-                                                ? ""
-                                                : "hidden"
-                                        } text-red-500`}
-                                        onClick={() => reject(applicant.id)}
-                                    >
-                                        Reject
-                                    </button>
-                                </span>
-                            </Table.Row>
-                        ))}
-                    </Table.Body>
-                </Table>
+                <TableContainer>
+                    <Table>
+                        <Thead>
+                            <Tr>
+                                <Th>Name</Th>
+                                <Th>Email</Th>
+                                <Th>Grade</Th>
+                                <Th>School</Th>
+                                <Th>T Shirt Size</Th>
+                                <Th>Technical Skill</Th>
+                                <Th>Comments</Th>
+                                <Th>Contact</Th>
+                                <Th>Documents</Th>
+                                <Th>Confirmation</Th>
+                                <Th>Rejection</Th>
+                                <Th>Rules</Th>
+                                <Th>Release</Th>
+                                <Th>Confirm</Th>
+                                <Th>Reject</Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody>
+                            {applicants.map((applicant) => (
+                                <Tr key={applicant.email}>
+                                    <Td>{applicant.name}</Td>
+                                    <Td>{applicant.email}</Td>
+                                    <Td>{applicant.grade}</Td>
+                                    <Td>{applicant.school}</Td>
+                                    <Td>{applicant.tShirtSize}</Td>
+                                    <Td>{applicant.technicalSkill}</Td>
+                                    <Td>{applicant.comments}</Td>
+                                    <Td>
+                                        {applicant.status.contact.toString()}
+                                    </Td>
+                                    <Td>
+                                        {applicant.status.documents.toString()}
+                                    </Td>
+                                    <Td>
+                                        {applicant.status.confirmation.toString()}
+                                    </Td>
+                                    <Td>
+                                        {applicant.status.rejected.toString()}
+                                    </Td>
+                                    <Td>
+                                        <a
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className={
+                                                applicant.downloads.release ===
+                                                ""
+                                                    ? "hidden"
+                                                    : ""
+                                            }
+                                            href={applicant.downloads.rules}
+                                        >
+                                            rules
+                                        </a>
+                                    </Td>
+                                    <Td>
+                                        <a
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            href={applicant.downloads.release}
+                                            className={
+                                                applicant.downloads.release ===
+                                                ""
+                                                    ? "hidden"
+                                                    : ""
+                                            }
+                                        >
+                                            release
+                                        </a>
+                                    </Td>
+                                    <Td>
+                                        <button
+                                            className={`${
+                                                applicant.status.documents
+                                                    ? ""
+                                                    : "hidden"
+                                            } text-green-500`}
+                                            onClick={() =>
+                                                confirm(applicant.id)
+                                            }
+                                        >
+                                            Confirm
+                                        </button>
+                                    </Td>
+                                    <Td>
+                                        <button
+                                            className={`${
+                                                applicant.status.documents
+                                                    ? ""
+                                                    : "hidden"
+                                            } text-red-500`}
+                                            onClick={() => reject(applicant.id)}
+                                        >
+                                            Reject
+                                        </button>
+                                    </Td>
+                                </Tr>
+                            ))}
+                        </Tbody>
+                    </Table>
+                </TableContainer>
             </main>
         </div>
     );

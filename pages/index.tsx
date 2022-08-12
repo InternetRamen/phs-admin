@@ -1,15 +1,22 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import { Button, Card, Modal } from "react-daisyui";
+
 import { initializeApp } from "firebase/app";
 
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { useRef,useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/router";
+import {
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalCloseButton,
+    Button,
+    useDisclosure,
+} from "@chakra-ui/react";
 const Home: NextPage = () => {
-
     const firebaseConfig = {
         apiKey: "AIzaSyBrCUdCf4V6XFOUoLrp2unufCJaidoKYlA",
         authDomain: "poolesvillehacks1.firebaseapp.com",
@@ -19,14 +26,15 @@ const Home: NextPage = () => {
         appId: "1:376208034987:web:84fc7ac43746b2dd013bee",
         measurementId: "G-QNQ6BJ0ZY7",
     };
-    const [modalOpen, setModalOpen] = useState(false);
+
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const provider = new GoogleAuthProvider();
     const auth = getAuth();
-    const router = useRouter()
+    const router = useRouter();
+    
+    const { isOpen, onOpen, onClose } = useDisclosure();
     const LoginWithGoogle = () => {
-        
         signInWithPopup(auth, provider)
             .then((result) => {
                 // This gives you a Google Access Token. You can use it to access the Google API.
@@ -36,13 +44,12 @@ const Home: NextPage = () => {
                 // The signed-in user info.
                 const user = result.user;
                 if (!user.email?.endsWith("@poolesvillehacks.tech")) {
-                    setModalOpen(true)
-                    auth.signOut()
+                    onOpen();
+                    auth.signOut();
                 } else {
-                        
                     router.push("/dashboard");
                 }
-                console.log(user)
+                console.log(user);
             })
             .catch((error) => {
                 // Handle Errors here.
@@ -50,7 +57,8 @@ const Home: NextPage = () => {
                 const errorMessage = error.message;
                 console.error(errorCode + errorMessage);
             });
-    }
+    };
+
     return (
         <div>
             <Head>
@@ -61,32 +69,25 @@ const Home: NextPage = () => {
                 />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
+
             <main className="w-screen h-screen flex items-center justify-center">
-                <Modal open={modalOpen} className="bg-slate-400 p-4 rounded">
-                    <Modal.Body>
+                <Modal isOpen={isOpen} onClose={onClose}>
+                    <ModalOverlay />
+                    <ModalContent className="p-4">
                         Restricted, please login with a @poolesvillehacks.tech
                         email.
-                    </Modal.Body>
-                    <Modal.Actions>
-                        <Button onClick={(e) => setModalOpen(false)}>
-                            Close
-                        </Button>
-                    </Modal.Actions>
+                    </ModalContent>
+                    <ModalFooter>
+                        <Button onClick={onClose}>Close</Button>
+                    </ModalFooter>
                 </Modal>
-                <Card>
-                    <Card.Body className="p-4 flex flex-col items-center justify-center gap-4">
-                        <Card.Title>
-                            <h1 className="text-4xl">
-                                poolesville_hacks admin
-                            </h1>
-                        </Card.Title>
-                        <Card.Actions>
-                            <button className="btn" onClick={LoginWithGoogle}>
-                                Login With Google
-                            </button>
-                        </Card.Actions>
-                    </Card.Body>
-                </Card>
+                <div className="p-4 flex flex-col items-center justify-center gap-4">
+                    <h1 className="text-4xl">poolesville_hacks admin</h1>
+
+                    <Button className="btn" onClick={LoginWithGoogle}>
+                        Login With Google
+                    </Button>
+                </div>
             </main>
         </div>
     );
