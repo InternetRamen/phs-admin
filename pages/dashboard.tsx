@@ -56,27 +56,43 @@ const Dashboard = () => {
     const db = getFirestore(app);
     const getData = async () => {
         let snap = await getDocs(collection(db, "users"));
+
         for (let doc of snap.docs) {
             const d = doc.data();
-            const obj = {
-                rules: await getDownloadURLfromPath(
-                    `user_documents/${d.name}/${d.name
-                        .toLowerCase()
-                        .replace(" ", "")}_${doc.id}_rules.pdf`
-                ),
-                release: await getDownloadURLfromPath(
-                    `user_documents/${d.name}/${d.name
-                        .toLowerCase()
-                        .replace(" ", "")}_${doc.id}_release.pdf`
-                ),
+            console.log(d.name);
+            d.downloads = {
+                rules: "",
+                release: "",
             };
+            if (d.status.contact) {
+                const obj = {
+                    rules: await getDownloadURLfromPath(
+                        `user_documents/${doc.id}/${sanitizeFileName(d.name)
+                            .toLowerCase()
+                            .replace(" ", "")}_${doc.id}_rules.pdf`
+                    ),
+                    release: await getDownloadURLfromPath(
+                        `user_documents/${doc.id}/${sanitizeFileName(d.name)
+                            .toLowerCase()
+                            .replace(" ", "")}_${doc.id}_release.pdf`
+                    ),
+                };
+                d.downloads = obj;
+            }
 
-            d.downloads = obj;
             d.id = doc.id;
-            setApplicants((a) => [...a, d]);
+
+            await addState(d);
         }
     };
-
+    const addState = (applicant: any) => {
+        setApplicants((a) => {
+            return [...a, applicant];
+        });
+    };
+    const sanitizeFileName = (name: string) => {
+        return name.replace(/[^a-zA-Z0-9]/g, "_");
+    };
     const [page, setPage] = useState("applicants");
     const storage = getStorage(app);
     const getDownloadURLfromPath = async (path: string) => {
@@ -179,8 +195,7 @@ const Dashboard = () => {
                                             target="_blank"
                                             rel="noreferrer"
                                             className={
-                                                applicant.downloads.release ===
-                                                ""
+                                                applicant.downloads.rules === ""
                                                     ? "hidden"
                                                     : ""
                                             }
